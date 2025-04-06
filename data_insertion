@@ -1,0 +1,83 @@
+ use multidb_snapshot
+switched to db multidb_snapshot
+multidb_snapshot> db.createCollection("metadata_collection")
+{ ok: 1 }
+multidb_snapshot> db.createCollection("nodes")
+{ ok: 1 }
+multidb_snapshot> db.createCollection("edges")
+{ ok: 1 }
+multidb_snapshot> db.createCollection("relational_data_collection")
+{ ok: 1 }
+multidb_snapshot> db.createCollection("xml_data_collection")
+{ ok: 1 }
+multidb_snapshot> db.createCollection("json_data_collection")
+{ ok: 1 }
+multidb_snapshot> db.metadata_collection.insertOne({
+...   sources: [
+...     { source_type: "relational", source_name: "CustomerDB" },
+...     { source_type: "xml", source_name: "PurchaseOrders.xml" },
+...     { source_type: "json", source_name: "VendorData" }
+...   ]
+... })
+...
+{
+  acknowledged: true,
+  insertedId: ObjectId('67f256d63f9c69b8d9b71236')
+}
+multidb_snapshot> db.nodes.insertMany([
+...   { id: "table_customers", type: "table", label: "Customers", properties: {} },
+...   { id: "column_customerid_customers", type: "column", label: "CustomerID", properties: { data_type: "INT", is_primary_key: true } },
+...   { id: "column_name_customers", type: "column", label: "Name", properties: { data_type: "VARCHAR" } },
+...   { id: "column_email_customers", type: "column", label: "Email", properties: { data_type: "VARCHAR" } },
+...
+...   { id: "element_purchase_orders", type: "element", label: "PurchaseOrders", properties: {} },
+...   { id: "element_order_1", type: "element", label: "Order", properties: { order_id: "PO12345" } },
+...   { id: "element_order_date", type: "element", label: "OrderDate", properties: { text_content: "2024-03-25" } },
+...
+...   { id: "object_vendors", type: "object", label: "Vendors", properties: {} },
+...   { id: "property_vendorid", type: "primitive", label: "VendorID", properties: { value: "V123" } },
+...   { id: "property_vendorname", type: "primitive", label: "VendorName", properties: { value: "ABC Supplies" } }
+... ])
+...
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('67f256dd3f9c69b8d9b71237'),
+    '1': ObjectId('67f256dd3f9c69b8d9b71238'),
+    '2': ObjectId('67f256dd3f9c69b8d9b71239'),
+    '3': ObjectId('67f256dd3f9c69b8d9b7123a'),
+    '4': ObjectId('67f256dd3f9c69b8d9b7123b'),
+    '5': ObjectId('67f256dd3f9c69b8d9b7123c'),
+    '6': ObjectId('67f256dd3f9c69b8d9b7123d'),
+    '7': ObjectId('67f256dd3f9c69b8d9b7123e'),
+    '8': ObjectId('67f256dd3f9c69b8d9b7123f'),
+    '9': ObjectId('67f256dd3f9c69b8d9b71240')
+  }
+}
+multidb_snapshot> db.edges.insertMany([
+...   // Relational
+...   { source: "table_customers", target: "column_customerid_customers", relation: "HAS_COLUMN" },
+...   { source: "table_customers", target: "column_name_customers", relation: "HAS_COLUMN" },
+...   { source: "table_customers", target: "column_email_customers", relation: "HAS_COLUMN" },
+...
+...   // XML
+...   { source: "element_purchase_orders", target: "element_order_1", relation: "PARENT_CHILD" },
+...   { source: "element_order_1", target: "element_order_date", relation: "PARENT_CHILD" },
+...
+...   // JSON
+...   { source: "object_vendors", target: "property_vendorid", relation: "PROPERTY_OF" },
+...   { source: "object_vendors", target: "property_vendorname", relation: "PROPERTY_OF" }
+... ])
+...
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('67f256e33f9c69b8d9b71241'),
+    '1': ObjectId('67f256e33f9c69b8d9b71242'),
+    '2': ObjectId('67f256e33f9c69b8d9b71243'),
+    '3': ObjectId('67f256e33f9c69b8d9b71244'),
+    '4': ObjectId('67f256e33f9c69b8d9b71245'),
+    '5': ObjectId('67f256e33f9c69b8d9b71246'),
+    '6': ObjectId('67f256e33f9c69b8d9b71247')
+  }
+}
