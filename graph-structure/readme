@@ -1,0 +1,480 @@
+# 1. Insert metadata
+python insert_metadata.py
+
+# 2. Insert sample data
+python insert_data.py
+
+# 3. Build the graph
+python build_graph.py
+
+# 4. Retrieve the data
+python retrieve_data.py
+
+#metadata:
+
+{
+  "_id": {
+    "$oid": "67fe472eb74635a654933639"
+  },
+  "source_type": "relational",
+  "source_name": "CustomerDB",
+  "entities": [
+    {
+      "type": "table",
+      "label": "Customers",
+      "columns": [
+        {
+          "label": "CustomerID",
+          "data_type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "label": "Name",
+          "data_type": "VARCHAR"
+        },
+        {
+          "label": "Email",
+          "data_type": "VARCHAR"
+        }
+      ]
+    }
+  ]
+}
+{
+  "_id": {
+    "$oid": "67fe472eb74635a65493363a"
+  },
+  "source_type": "xml",
+  "source_name": "PurchaseOrders.xml",
+  "entities": [
+    {
+      "type": "element",
+      "label": "PurchaseOrder",
+      "children": [
+        {
+          "label": "OrderID",
+          "data_type": "string"
+        },
+        {
+          "label": "CustomerName",
+          "data_type": "string"
+        },
+        {
+          "label": "Amount",
+          "data_type": "float"
+        }
+      ]
+    }
+  ]
+}
+{
+  "_id": {
+    "$oid": "67fe472eb74635a65493363b"
+  },
+  "source_type": "json",
+  "source_name": "VendorData",
+  "entities": [
+    {
+      "type": "object",
+      "label": "Vendor",
+      "fields": [
+        {
+          "label": "VendorID",
+          "data_type": "int"
+        },
+        {
+          "label": "VendorName",
+          "data_type": "string"
+        },
+        {
+          "label": "ContactEmail",
+          "data_type": "string"
+        }
+      ]
+    }
+  ]
+}
+
+
+**json_data_collection:**
+
+```
+{
+  "_id": {
+    "$oid": "67fe47e7a17fb2108036537f"
+  },
+  "object_name": "Vendor",
+  "source": "VendorData",
+  "records": [
+    {
+      "VendorID": 1,
+      "VendorName": "Acme Corp",
+      "ContactEmail": "acme@example.com"
+    },
+    {
+      "VendorID": 2,
+      "VendorName": "Globex Inc",
+      "ContactEmail": "globex@example.com"
+    }
+  ]
+}
+```
+
+**relational_data_collection:**
+
+```
+{
+  "_id": {
+    "$oid": "67fe47e7a17fb2108036537d"
+  },
+  "table_name": "Customers",
+  "source": "CustomerDB",
+  "rows": [
+    {
+      "CustomerID": 101,
+      "Name": "Alice",
+      "Email": "alice@example.com"
+    },
+    {
+      "CustomerID": 102,
+      "Name": "Bob",
+      "Email": "bob@example.com"
+    }
+  ]
+}
+```
+
+**xml_data_collection:**
+
+```
+{
+  "_id": {
+    "$oid": "67fe47e7a17fb2108036537e"
+  },
+  "element_name": "PurchaseOrder",
+  "source": "PurchaseOrders.xml",
+  "entries": [
+    {
+      "OrderID": "PO001",
+      "CustomerName": "Charlie",
+      "Amount": 200.5
+    },
+    {
+      "OrderID": "PO002",
+      "CustomerName": "Dave",
+      "Amount": 340
+    }
+  ]
+}
+```
+
+python build_graph.py
+
+Nodes:
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642202"
+  },
+  "id": "table_customers",
+  "label": "Customers",
+  "properties": {},
+  "type": "table"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642203"
+  },
+  "id": "column_customerid_customers",
+  "label": "CustomerID",
+  "properties": {
+    "label": "CustomerID",
+    "data_type": "INT",
+    "is_primary_key": true
+  },
+  "type": "column"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642205"
+  },
+  "id": "column_name_customers",
+  "label": "Name",
+  "properties": {
+    "label": "Name",
+    "data_type": "VARCHAR"
+  },
+  "type": "column"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642207"
+  },
+  "id": "column_email_customers",
+  "label": "Email",
+  "properties": {
+    "label": "Email",
+    "data_type": "VARCHAR"
+  },
+  "type": "column"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642209"
+  },
+  "id": "element_purchaseorder",
+  "label": "PurchaseOrder",
+  "properties": {},
+  "type": "element"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e11564220a"
+  },
+  "id": "element_orderid_purchaseorder",
+  "label": "OrderID",
+  "properties": {
+    "label": "OrderID",
+    "data_type": "string"
+  },
+  "type": "element"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e11564220c"
+  },
+  "id": "element_customername_purchaseorder",
+  "label": "CustomerName",
+  "properties": {
+    "label": "CustomerName",
+    "data_type": "string"
+  },
+  "type": "element"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e11564220e"
+  },
+  "id": "element_amount_purchaseorder",
+  "label": "Amount",
+  "properties": {
+    "label": "Amount",
+    "data_type": "float"
+  },
+  "type": "element"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642210"
+  },
+  "id": "object_vendor",
+  "label": "Vendor",
+  "properties": {},
+  "type": "object"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642211"
+  },
+  "id": "field_vendorid_vendor",
+  "label": "VendorID",
+  "properties": {
+    "label": "VendorID",
+    "data_type": "int"
+  },
+  "type": "field"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642213"
+  },
+  "id": "field_vendorname_vendor",
+  "label": "VendorName",
+  "properties": {
+    "label": "VendorName",
+    "data_type": "string"
+  },
+  "type": "field"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642215"
+  },
+  "id": "field_contactemail_vendor",
+  "label": "ContactEmail",
+  "properties": {
+    "label": "ContactEmail",
+    "data_type": "string"
+  },
+  "type": "field"
+}
+```
+
+Edges:
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642204"
+  },
+  "source": "table_customers",
+  "target": "column_customerid_customers",
+  "relation": "HAS_COLUMN"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642206"
+  },
+  "source": "table_customers",
+  "target": "column_name_customers",
+  "relation": "HAS_COLUMN"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642208"
+  },
+  "source": "table_customers",
+  "target": "column_email_customers",
+  "relation": "HAS_COLUMN"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e11564220b"
+  },
+  "target": "element_orderid_purchaseorder",
+  "source": "element_purchaseorder",
+  "relation": "HAS_CHILD"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e11564220d"
+  },
+  "source": "element_purchaseorder",
+  "target": "element_customername_purchaseorder",
+  "relation": "HAS_CHILD"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e11564220f"
+  },
+  "target": "element_amount_purchaseorder",
+  "source": "element_purchaseorder",
+  "relation": "HAS_CHILD"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642212"
+  },
+  "target": "field_vendorid_vendor",
+  "source": "object_vendor",
+  "relation": "HAS_FIELD"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642214"
+  },
+  "target": "field_vendorname_vendor",
+  "source": "object_vendor",
+  "relation": "HAS_FIELD"
+}
+```
+
+```
+{
+  "_id": {
+    "$oid": "67fe485bbdb469e115642216"
+  },
+  "target": "field_contactemail_vendor",
+  "source": "object_vendor",
+  "relation": "HAS_FIELD"
+}
+```
+
+python retrieve_data.py
+
+C:\Users\Kanan Gupta\Multi_DB>python retrieve_data.py
+
+📄 Data from 'Customers' (relational):
+
++--------------+--------+-------------------+
+|   CustomerID | Name   | Email             |
++==============+========+===================+
+|          101 | Alice  | alice@example.com |
++--------------+--------+-------------------+
+|          102 | Bob    | bob@example.com   |
++--------------+--------+-------------------+
+
+📄 Data from 'PurchaseOrder' (xml):
+
++-----------+----------------+----------+
+| OrderID   | CustomerName   |   Amount |
++===========+================+==========+
+| PO001     | Charlie        |    200.5 |
++-----------+----------------+----------+
+| PO002     | Dave           |    340   |
++-----------+----------------+----------+
+
+📄 Data from 'Vendor' (json):
+
++------------+--------------+--------------------+
+|   VendorID | VendorName   | ContactEmail       |
++============+==============+====================+
+|          1 | Acme Corp    | acme@example.com   |
++------------+--------------+--------------------+
+|          2 | Globex Inc   | globex@example.com |
++------------+--------------+--------------------+
