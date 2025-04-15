@@ -18,6 +18,7 @@ class GraphNode:
     def save(self, collection):
         collection.update_one({"id": self.id}, {"$set": self.to_dict()}, upsert=True)
 
+
 class GraphEdge:
     def __init__(self, source: str, target: str, relation: str):
         self.source = source
