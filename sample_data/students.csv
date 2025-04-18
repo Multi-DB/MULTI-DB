@@ -1,9 +1,0 @@
-StudentID,FirstName,LastName,DateOfBirth,Gender,Email,Phone,Address,EnrollmentDate,Major,GPA
-1001,John,Smith,1998-05-15,M,john.smith@university.edu,555-123-4567,"123 Main St, Anytown, USA",2017-08-20,Computer Science,3.75
-1002,Emily,Johnson,1999-02-28,F,emily.johnson@university.edu,555-234-5678,"456 Oak Ave, Somewhere, USA",2018-01-15,Biology,3.92
-1003,Michael,Williams,1997-11-05,M,michael.williams@university.edu,555-345-6789,"789 Pine Rd, Nowhere, USA",2016-09-01,Electrical Engineering,3.45
-1004,Sophia,Lee,2000-04-12,F,sophia.lee@university.edu,555-456-7890,"321 Elm St, Uptown, USA",2019-09-01,Mathematics,3.88
-1005,David,Brown,1998-08-30,M,david.brown@university.edu,555-567-8901,"654 Cedar St, Hometown, USA",2017-01-10,Mechanical Engineering,3.60
-1006,Olivia,Garcia,1999-07-22,F,olivia.garcia@university.edu,555-678-9012,"987 Maple Dr, Lakeside, USA",2018-08-25,Psychology,3.78
-1007,Daniel,Martinez,1997-03-18,M,daniel.martinez@university.edu,555-789-0123,"159 Birch Ln, Mountainview, USA",2016-01-15,Business Administration,3.65
-1008,Emma,Davis,2000-09-05,F,emma.davis@university.edu,555-890-1234,"753 Willow Way, Riverside, USA",2019-08-20,Chemistry,3.95
