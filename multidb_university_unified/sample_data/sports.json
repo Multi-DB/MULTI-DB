@@ -1,0 +1,30 @@
+[
+    {
+        "_id": "SPORT001",
+        "studentIdentifier": 1003,
+        "details": { "sport": "Basketball", "team": "University Eagles", "pos": "Point Guard" },
+        "stats": { "season": "Winter 2020-2021", "played": 15 },
+        "notes": ["Conference Champions", "MVP Award"]
+    },
+    {
+        "_id": "SPORT002",
+        "studentIdentifier": 1005,
+        "details": { "sport": "Soccer", "team": "Mechanical Mavericks", "pos": "Midfielder" },
+        "stats": { "season": "Spring 2021", "played": 10 },
+        "notes": ["Top Scorer"]
+    },
+    {
+        "_id": "SPORT003",
+        "studentIdentifier": 1007,
+        "details": { "sport": "Tennis", "team": "University Racquet Club", "pos": "Singles Player" },
+        "stats": { "season": "Fall 2020", "played": 8 },
+        "notes": ["Regional Finalist"]
+    },
+    {
+        "_id": "SPORT004",
+        "studentIdentifier": 1002,
+        "details": { "sport": "Swimming", "team": "Aqua Eagles", "pos": "Freestyle" },
+        "stats": { "season": "Winter 2021-2022", "played": 6 },
+        "notes": ["3 Gold Medals"]
+    }
+]

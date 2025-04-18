@@ -1,0 +1,44 @@
+<ClubMemberships>
+  <Membership id="CLUB001" studentId="1001" active="true">
+    <ClubName>Computer Science Society</ClubName>
+    <Role>President</Role>
+    <Joined>2018-09-10</Joined>
+    <Attendance count="24"/>
+  </Membership>
+  <Membership id="CLUB002" studentId="1002" active="true">
+    <ClubName>Biology Students Association</ClubName>
+    <Role>Treasurer</Role>
+    <Joined>2019-01-15</Joined>
+    <Attendance count="18"/>
+  </Membership>
+  <Membership id="CLUB003" studentId="1004" active="true">
+    <ClubName>Math Club</ClubName>
+    <Role>Member</Role>
+    <Joined>2020-09-05</Joined>
+    <Attendance count="12"/>
+  </Membership>
+  <Membership id="CLUB004" studentId="1005" active="true">
+    <ClubName>Robotics Club</ClubName>
+    <Role>Vice President</Role>
+    <Joined>2019-02-20</Joined>
+    <Attendance count="20"/>
+  </Membership>
+  <Membership id="CLUB005" studentId="1006" active="true">
+    <ClubName>Psychology Society</ClubName>
+    <Role>Event Coordinator</Role>
+    <Joined>2019-09-15</Joined>
+    <Attendance count="16"/>
+  </Membership>
+  <Membership id="CLUB006" studentId="1007" active="true">
+    <ClubName>Entrepreneurship Club</ClubName>
+    <Role>President</Role>
+    <Joined>2017-01-20</Joined>
+    <Attendance count="30"/>
+  </Membership>
+  <Membership id="CLUB007" studentId="1008" active="true">
+    <ClubName>Chemistry Club</ClubName>
+    <Role>Lab Assistant</Role>
+    <Joined>2020-02-10</Joined>
+    <Attendance count="14"/>
+  </Membership>
+</ClubMemberships>
