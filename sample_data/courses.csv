@@ -1,0 +1,11 @@
+CourseID,CourseCode,CourseName,CreditHours,Department
+101,CS101,Introduction to Computer Science,4,Computer Science
+102,BIO201,Cell Biology,3,Biology
+103,EE301,Circuit Analysis,4,Electrical Engineering
+104,MATH202,Linear Algebra,3,Mathematics
+105,MECH310,Thermodynamics,4,Mechanical Engineering
+106,PSY101,Introduction to Psychology,3,Psychology
+107,BUS201,Principles of Management,3,Business
+108,CHEM205,Organic Chemistry,4,Chemistry
+109,CS205,Data Structures and Algorithms,4,Computer Science
+110,BIO301,Genetics,4,Biology
