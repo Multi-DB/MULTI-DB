@@ -1,0 +1,4 @@
+pymongo
+tabulate
+lxml
+python-dateutil
