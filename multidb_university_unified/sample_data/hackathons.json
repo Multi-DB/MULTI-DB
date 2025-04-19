@@ -1,0 +1,77 @@
+[
+    {
+      "activityId": "HACK001",
+      "studentRef": 1001,
+      "eventName": "Annual University Hackathon",
+      "team": "Code Wizards",
+      "project": {
+        "title": "AI Tutor System",
+        "desc": "An AI-powered learning assistant for students"
+      },
+      "date": "2020-10-15T00:00:00Z",
+      "results": {
+         "awards": ["Best Innovation Award"],
+         "skills": ["Python", "Machine Learning", "Natural Language Processing"]
+      }
+    },
+    {
+      "activityId": "HACK002",
+      "studentRef": 1002,
+      "eventName": "BioTech Challenge",
+      "team": "Gene Hackers",
+      "project": {
+        "title": "DNA Sequence Analyzer",
+        "desc": "Tool for analyzing DNA sequences for mutations"
+      },
+      "date": "2021-03-22T00:00:00Z",
+       "results": {
+         "awards": ["Best Scientific Application"],
+         "skills": ["Python", "Bioinformatics", "Data Analysis"]
+      }
+    },
+    {
+      "activityId": "HACK003",
+      "studentRef": 1004,
+      "eventName": "Math Modeling Hackathon",
+      "team": "MathMagicians",
+      "project": {
+        "title": "Traffic Flow Optimization",
+        "desc": "Modeling urban traffic to minimize congestion"
+      },
+      "date": "2022-01-20T00:00:00Z",
+       "results": {
+         "awards": [],
+         "skills": ["Mathematical Modeling", "Simulation", "Python"]
+      }
+    },
+    {
+      "activityId": "HACK004",
+      "studentRef": 1006,
+      "eventName": "PsychTech Hackathon",
+      "team": "MindMeld",
+       "project": {
+        "title": "Mental Health Chatbot",
+        "desc": "AI chatbot for preliminary mental health screening"
+      },
+      "date": "2021-11-12T00:00:00Z",
+       "results": {
+         "awards": ["Best Social Impact"],
+         "skills": ["Psychology", "NLP", "UX Design"]
+      }
+    },
+    {
+      "activityId": "HACK005",
+      "studentRef": 1008,
+      "eventName": "ChemHack",
+      "team": "LabRats",
+       "project": {
+        "title": "Chemical Reaction Simulator",
+        "desc": "Interactive simulation of organic chemistry reactions"
+      },
+      "date": "2022-02-18T00:00:00Z",
+       "results": {
+         "awards": ["Best Educational Tool"],
+         "skills": ["Chemistry", "JavaScript", "Visualization"]
+      }
+    }
+  ]
