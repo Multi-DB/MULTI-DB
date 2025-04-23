@@ -1,236 +1,301 @@
-# data_models.py
-
+import pandas as pd
+import json
+import xml.etree.ElementTree as ET
 from datetime import datetime
+import os
+import logging
+from typing import Dict, List, Any, Optional
 
-# --- Schema Definitions for Data Sources ---
+# --- CSV Schema Inference ---
+def infer_csv_schema(file_path: str) -> List[Dict[str, str]]:
+    """Infer schema from a CSV file."""
+    try:
+        df = pd.read_csv(file_path)
+        schema = []
+        for column in df.columns:
+            dtype = str(df[column].dtype)
+            if "int" in dtype:
+                data_type = "INT"
+            elif "float" in dtype:
+                data_type = "DECIMAL"
+            elif "datetime" in dtype:
+                data_type = "DATE"
+            else:
+                data_type = "STRING"
+            schema.append({"label": column, "data_type": data_type})
+        return schema
+    except Exception as e:
+        logging.error(f"Error inferring CSV schema for {file_path}: {e}")
+        return []
 
-def get_collection_schemas():
-    """
-    Return schema definitions for University data sources (CSV, JSON, XML)
-    and how they map to logical entities and MongoDB collections.
-    Includes Foreign Key definitions and parsing hints.
-    """
-    return [
-        # --- Source 1: UniversityDB (Simulated Relational via CSV) ---
-        {
-            "source_type": "relational",
-            "source_name": "UniversityDB",
-            "entities": [
-                {
-                    "type": "table",
-                    "label": "Students", # Target Collection Name
-                    "columns": [ # Corresponds to CSV headers
-                        {"label": "StudentID", "data_type": "INT", "is_primary_key": True},
-                        {"label": "FirstName", "data_type": "VARCHAR(50)"},
-                        {"label": "LastName", "data_type": "VARCHAR(50)"},
-                        {"label": "DateOfBirth", "data_type": "DATE"},
-                        {"label": "Gender", "data_type": "VARCHAR(1)"},
-                        {"label": "Email", "data_type": "VARCHAR(100)"},
-                        {"label": "Phone", "data_type": "VARCHAR(15)"},
-                        {"label": "Address", "data_type": "VARCHAR(255)"},
-                        {"label": "EnrollmentDate", "data_type": "DATE"},
-                        {"label": "Major", "data_type": "VARCHAR(100)"},
-                        {"label": "GPA", "data_type": "DECIMAL(3,2)"} # Stored as double
-                    ]
-                },
-                {
-                    "type": "table",
-                    "label": "Courses", # Target Collection Name
-                    "columns": [
-                        {"label": "CourseID", "data_type": "INT", "is_primary_key": True},
-                        {"label": "CourseCode", "data_type": "VARCHAR(10)"},
-                        {"label": "CourseName", "data_type": "VARCHAR(100)"},
-                        {"label": "CreditHours", "data_type": "INT"},
-                        {"label": "Department", "data_type": "VARCHAR(100)"}
-                    ]
-                },
-                {
-                    "type": "table",
-                    "label": "Enrollments", # Target Collection Name
-                    "columns": [
-                        {"label": "EnrollmentID", "data_type": "INT", "is_primary_key": True},
-                        # Foreign Key Definitions:
-                        {"label": "StudentID", "data_type": "INT", "is_foreign_key": True, "references": "Students"},
-                        {"label": "CourseID", "data_type": "INT", "is_foreign_key": True, "references": "Courses"},
-                        {"label": "Semester", "data_type": "VARCHAR(6)"},
-                        {"label": "Year", "data_type": "INT"},
-                        {"label": "Grade", "data_type": "VARCHAR(2)"}
-                    ]
-                }
-            ]
-        },
-        # --- Source 2: UniversityActivities (Document Sources via JSON/XML) ---
-        {
-            "source_type": "document", # Grouping logical source type
-            "source_name": "UniversityActivities",
-            "entities": [
-                {
-                    "type": "json_objects", # From hackathons.json
-                    "label": "HackathonParticipations", # Target Collection Name
-                    "fields": [ # Map JSON structure to target fields
-                        {"label": "ActivityID", "data_type": "STRING", "is_primary_key": True, "json_path": "activityId"},
-                        {"label": "StudentID", "data_type": "INT", "is_foreign_key": True, "references": "Students", "json_path": "studentRef"},
-                        {"label": "HackathonName", "data_type": "STRING", "json_path": "eventName"},
-                        {"label": "TeamName", "data_type": "STRING", "json_path": "team"},
-                        {"label": "ProjectTitle", "data_type": "STRING", "json_path": "project.title"},
-                        {"label": "ProjectDescription", "data_type": "STRING", "json_path": "project.desc"},
-                        {"label": "ParticipationDate", "data_type": "DATE", "json_path": "date"}, # Will be parsed as date
-                        {"label": "AwardsWon", "data_type": "ARRAY<STRING>", "json_path": "results.awards"},
-                        {"label": "SkillsUsed", "data_type": "ARRAY<STRING>", "json_path": "results.skills"}
-                    ]
-                },
-                {
-                    "type": "json_objects", # From sports.json
-                    "label": "SportsParticipations", # Target Collection Name
-                    "fields": [
-                        {"label": "ActivityID", "data_type": "STRING", "is_primary_key": True, "json_path": "_id"},
-                        {"label": "StudentID", "data_type": "INT", "is_foreign_key": True, "references": "Students", "json_path": "studentIdentifier"},
-                        {"label": "SportName", "data_type": "STRING", "json_path": "details.sport"},
-                        {"label": "TeamName", "data_type": "STRING", "json_path": "details.team"},
-                        {"label": "Position", "data_type": "STRING", "json_path": "details.pos"},
-                        {"label": "Season", "data_type": "STRING", "json_path": "stats.season"},
-                        {"label": "MatchesPlayed", "data_type": "INT", "json_path": "stats.played"},
-                        {"label": "Achievements", "data_type": "ARRAY<STRING>", "json_path": "notes"} # Map 'notes' array
-                    ]
-                },
-                {
-                    "type": "xml_structure", # From student_clubs.xml
-                    "label": "StudentClubs", # Target Collection Name
-                    "xpath_base": "//Membership", # Base element for each record
-                    "fields": [
-                        {"label": "MembershipID", "data_type": "STRING", "is_primary_key": True, "xpath": "@id"}, # Attribute
-                        {"label": "StudentID", "data_type": "INT", "is_foreign_key": True, "references": "Students", "xpath": "@studentId"}, # Attribute
-                        {"label": "ClubName", "data_type": "STRING", "xpath": "ClubName"}, # Child element text
-                        {"label": "Role", "data_type": "STRING", "xpath": "Role"},
-                        {"label": "JoinDate", "data_type": "DATE", "xpath": "Joined"},
-                        {"label": "Active", "data_type": "BOOLEAN", "xpath": "@active"}, # Attribute
-                        {"label": "MeetingsAttended", "data_type": "INT", "xpath": "Attendance/@count"} # Attribute of child
-                    ]
-                }
-                # Removed Metagraph definition here
-            ]
-        }
-    ]
+# --- JSON Schema Inference ---
+def infer_json_schema(file_path: str) -> List[Dict[str, str]]:
+    """Infer schema from a JSON file."""
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+        schema = []
+        sample = data[0] if isinstance(data, list) else data
+        for key, value in sample.items():
+            if isinstance(value, int):
+                data_type = "INT"
+            elif isinstance(value, float):
+                data_type = "DECIMAL"
+            elif isinstance(value, str):
+                data_type = "STRING"
+            elif isinstance(value, list):
+                data_type = "ARRAY<STRING>"
+            elif isinstance(value, dict):
+                data_type = "OBJECT"
+            else:
+                data_type = "STRING"
+            schema.append({"label": key, "data_type": data_type})
+        return schema
+    except Exception as e:
+        logging.error(f"Error inferring JSON schema for {file_path}: {e}")
+        return []
 
+# --- XML Schema Inference ---
+def infer_xml_schema(file_path: str, xpath_base: str = "./record") -> List[Dict[str, str]]:
+    """Infer schema from an XML file using a base XPath for records."""
+    try:
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+        schema = []
+        records = root.findall(xpath_base)
+        if not records:
+            logging.warning(f"No elements found for XPath '{xpath_base}' in {file_path}. Falling back to './*'.")
+            records = root.findall("./*")
+        if records:
+            first_record = records[0]
+            for child in first_record:
+                data_type = "STRING"
+                if child.text and child.text.strip().isdigit():
+                    data_type = "INT"
+                elif child.text and child.text.strip().replace('.', '', 1).isdigit():
+                    data_type = "DECIMAL"
+                schema.append({"label": child.tag, "data_type": data_type, "xpath": f"./{child.tag}"})
+            for attr, value in first_record.attrib.items():
+                schema.append({"label": attr, "data_type": "STRING", "xpath": f"@{attr}"})
+        return schema
+    except ET.ParseError as e:
+        logging.error(f"XML parsing error in {file_path}: {e}")
+        return []
+    except Exception as e:
+        logging.error(f"Unexpected error inferring XML schema for {file_path}: {e}")
+        return []
 
-# --- MongoDB Validation Schemas (For Target Collections) ---
+# --- Schema Loading ---
+def load_schemas_from_file(schema_file_path: str) -> List[Dict[str, Any]]:
+    """Load schemas from a user-provided JSON schema file."""
+    try:
+        if not os.path.exists(schema_file_path):
+            raise FileNotFoundError(f"Schema file not found: {schema_file_path}")
+        with open(schema_file_path, 'r') as f:
+            schemas = json.load(f)
+        if not isinstance(schemas, list) or not all(isinstance(item, dict) for item in schemas):
+            raise ValueError("Schema file must contain a list of dictionaries.")
+        return schemas
+    except Exception as e:
+        logging.error(f"Error loading schemas from {schema_file_path}: {e}")
+        return []
 
-def get_mongo_validation_schemas():
-    """Return MongoDB JSON Schema validations for all target collections."""
-    schemas = {
-        # --- UniversityDB Collections ---
-        "Students": {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["StudentID", "FirstName", "LastName", "DateOfBirth", "EnrollmentDate", "Major"],
-                "properties": {
-                    "StudentID": {"bsonType": "int"},
-                    "FirstName": {"bsonType": "string", "maxLength": 50},
-                    "LastName": {"bsonType": "string", "maxLength": 50},
-                    "DateOfBirth": {"bsonType": "date"},
-                    "Gender": {"bsonType": ["string", "null"], "maxLength": 1},
-                    "Email": {"bsonType": ["string", "null"], "maxLength": 100},
-                    "Phone": {"bsonType": ["string", "null"], "maxLength": 15},
-                    "Address": {"bsonType": ["string", "null"], "maxLength": 255},
-                    "EnrollmentDate": {"bsonType": "date"},
-                    "Major": {"bsonType": "string", "maxLength": 100},
-                    "GPA": {"bsonType": ["double", "null"], "minimum": 0, "maximum": 4.0}
-                }
-            }
-        },
-        "Courses": {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["CourseID", "CourseCode", "CourseName", "CreditHours", "Department"],
-                "properties": {
-                    "CourseID": {"bsonType": "int"},
-                    "CourseCode": {"bsonType": "string", "maxLength": 10},
-                    "CourseName": {"bsonType": "string", "maxLength": 100},
-                    "CreditHours": {"bsonType": "int"},
-                    "Department": {"bsonType": "string", "maxLength": 100}
-                }
-            }
-        },
-        "Enrollments": {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["EnrollmentID", "StudentID", "CourseID", "Semester", "Year"],
-                "properties": {
-                    "EnrollmentID": {"bsonType": "int"},
-                    "StudentID": {"bsonType": "int"}, # FK
-                    "CourseID": {"bsonType": "int"}, # FK
-                    "Semester": {"bsonType": "string", "maxLength": 6},
-                    "Year": {"bsonType": "int"},
-                    "Grade": {"bsonType": ["string", "null"], "maxLength": 2}
-                }
-            }
-        },
-         # --- UniversityActivities Collections ---
-        "HackathonParticipations": {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["ActivityID", "StudentID", "HackathonName", "ParticipationDate"],
-                "properties": {
-                    "ActivityID": {"bsonType": "string"},
-                    "StudentID": {"bsonType": "int"}, # FK
-                    "HackathonName": {"bsonType": "string"},
-                    "TeamName": {"bsonType": ["string", "null"]},
-                    "ProjectTitle": {"bsonType": ["string", "null"]},
-                    "ProjectDescription": {"bsonType": ["string", "null"]},
-                    "ParticipationDate": {"bsonType": "date"},
-                    "AwardsWon": {"bsonType": "array", "items": {"bsonType": "string"}},
-                    "SkillsUsed": {"bsonType": "array", "items": {"bsonType": "string"}}
-                }
-            }
-        },
-        "SportsParticipations": {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["ActivityID", "StudentID", "SportName", "Season"],
-                "properties": {
-                    "ActivityID": {"bsonType": "string"},
-                    "StudentID": {"bsonType": "int"}, # FK
-                    "SportName": {"bsonType": "string"},
-                    "TeamName": {"bsonType": ["string", "null"]},
-                    "Position": {"bsonType": ["string", "null"]},
-                    "Season": {"bsonType": "string"},
-                    "MatchesPlayed": {"bsonType": ["int", "null"]},
-                    "Achievements": {"bsonType": "array", "items": {"bsonType": "string"}}
-                }
-            }
-        },
-        "StudentClubs": {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["MembershipID", "StudentID", "ClubName", "JoinDate", "Active"],
-                "properties": {
-                    "MembershipID": {"bsonType": "string"},
-                    "StudentID": {"bsonType": "int"}, # FK
-                    "ClubName": {"bsonType": "string"},
-                    "Role": {"bsonType": ["string", "null"]},
-                    "JoinDate": {"bsonType": "date"},
-                    "Active": {"bsonType": "bool"},
-                    "MeetingsAttended": {"bsonType": ["int", "null"]}
-                }
-            }
-        }
+# --- MongoDB Validation Schema Generation ---
+def map_data_type_to_bson(data_type: str) -> Any:
+    """Map schema data types to MongoDB BSON types."""
+    type_mapping = {
+        "INT": "int",
+        "DECIMAL": "double",
+        "DATE": "date",
+        "STRING": "string",
+        "ARRAY<STRING>": {"bsonType": "array", "items": {"bsonType": "string"}},
+        "OBJECT": "object"
     }
-    return schemas
+    return type_mapping.get(data_type, "string")
 
+def generate_mongo_validation_schemas(schemas: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    """Generate MongoDB validation schemas dynamically."""
+    validation_schemas = {}
+    for source in schemas:
+        for entity in source.get("entities", []):
+            collection_name = entity["label"]
+            properties = {}
+            required_fields = []
+            for field in entity.get("columns", []):
+                field_name = field["label"]
+                bson_type = map_data_type_to_bson(field["data_type"])
+                properties[field_name] = {"bsonType": bson_type}
+                if field.get("is_primary_key") or field.get("required", False):
+                    required_fields.append(field_name)
+            validation_schemas[collection_name] = {
+                "$jsonSchema": {
+                    "bsonType": "object",
+                    "required": required_fields,
+                    "properties": properties
+                }
+            }
+    return validation_schemas
+
+# --- Schema Finder ---
+def find_schema_for_entity(entity_label: str, file_path: str) -> Optional[Dict[str, Any]]:
+    """Find or infer the schema for a given entity label."""
+    file_extension = os.path.splitext(file_path)[1].lower()
+    if file_extension == ".csv":
+        return {"schema": infer_csv_schema(file_path), "source_type": "CSV"}
+    elif file_extension == ".json":
+        return {"schema": infer_json_schema(file_path), "source_type": "JSON"}
+    elif file_extension == ".xml":
+        inferred_schema = infer_xml_schema(file_path)
+        if inferred_schema:
+            return {"schema": inferred_schema, "source_type": "XML"}
+        logging.error(f"Failed to infer schema for XML file: {file_path}")
+        return None
+    else:
+        logging.warning(f"Unsupported file type for schema inference: {file_extension}")
+        return None
+
+def get_collection_schemas(schema_file_path="/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/market_data/schema_file.json"):
+    """
+    Load schema definitions for University data sources (CSV, JSON, XML)
+    from a user-provided schema file.
+    """
+    return load_schemas_from_file(schema_file_path)
+
+def get_mongo_validation_schemas(schema_file_path="/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/market_data/schema_file.json"):
+    """
+    Generate MongoDB validation schemas dynamically from the user-provided schema file.
+    """
+    schemas = load_schemas_from_file(schema_file_path)
+    validation_schemas = {}
+    for source in schemas:
+        for entity in source.get("entities", []):
+            collection_name = entity["label"]
+            properties = {}
+            required_fields = []
+            for field in entity.get("columns", entity.get("fields", [])):
+                field_name = field["label"]
+                data_type = field["data_type"]
+                bson_type = map_data_type_to_bson(data_type)
+                properties[field_name] = {"bsonType": bson_type}
+                required = field.get("required", [])
+                if isinstance(required, bool):
+                    required = [field_name] if required else []
+                elif not isinstance(required, list):
+                    required = []
+                if field.get("is_primary_key") or field_name in required:
+                    required_fields.append(field_name)
+            validation_schemas[collection_name] = {
+                "$jsonSchema": {
+                    "bsonType": "object",
+                    "required": required_fields,
+                    "properties": properties
+                }
+            }
+    return validation_schemas
 
 # --- Helper function to find schema by label ---
 _schema_cache = None
-def find_schema_for_entity(entity_label: str) -> dict | None:
-    """Finds the schema definition dictionary for a given entity label."""
+_collection_schemas = None
+
+def get_collection_schemas():
+    """Return the schemas for all collections."""
+    global _collection_schemas
+    
+    if _collection_schemas is not None:
+        return _collection_schemas
+    
+    # Build collection schemas from the schema file
+    schemas = []
+    raw_schemas = get_schemas()
+    
+    if isinstance(raw_schemas, dict) and raw_schemas:
+        for source_type, sources in raw_schemas.items():
+            for source in sources:
+                schemas.append(source)
+    elif isinstance(raw_schemas, list):
+        schemas = raw_schemas
+    
+    _collection_schemas = schemas
+    return schemas
+
+def get_schemas():
+    """Get raw schemas from file."""
     global _schema_cache
-    if _schema_cache is None:
-        _schema_cache = {}
-        all_schemas = get_collection_schemas()
-        for source_schema in all_schemas:
-            for entity in source_schema.get("entities", []):
-                _schema_cache[entity["label"]] = {
-                    "schema": entity, # The specific entity definition
-                    "source_type": source_schema["source_type"],
-                    "source_name": source_schema["source_name"]
+    
+    if (_schema_cache):
+        return _schema_cache
+    
+    base_dir = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/multidb_university_unified/sample_data"
+    schema_path = os.path.join(base_dir, "schema_file.json")
+    
+    if not os.path.exists(schema_path):
+        logging.error(f"Schema file not found at {schema_path}")
+        return []
+    
+    try:
+        with open(schema_path, 'r') as f:
+            _schema_cache = json.load(f)
+        return _schema_cache
+    except Exception as e:
+        logging.error(f"Error loading schema: {e}")
+        return []
+
+def get_mongo_validation_schemas():
+    """Generate MongoDB JSON Schema validation for each entity."""
+    validation_schemas = {}
+    
+    for source in get_collection_schemas():
+        for entity in source.get('entities', []):
+            entity_label = entity.get('label')
+            if not entity_label:
+                continue
+            
+            # Create a lenient validation schema
+            validation_schema = {
+                "$jsonSchema": {
+                    "bsonType": "object",
+                    "additionalProperties": True,
+                    "required": [],
+                    "properties": {}
                 }
-    return _schema_cache.get(entity_label)
+            }
+            
+            fields = entity.get('columns', []) or entity.get('fields', [])
+            for field in fields:
+                field_name = field.get('label')
+                if not field_name:
+                    continue
+                
+                if field.get('is_primary_key'):
+                    validation_schema['$jsonSchema']['required'].append(field_name)
+                
+                # Create properties with multiple accepted types
+                validation_schema['$jsonSchema']['properties'][field_name] = {
+                    "bsonType": ["string", "int", "double", "bool", "date", "array", "object", "null"]
+                }
+            
+            validation_schemas[entity_label] = validation_schema
+            
+    return validation_schemas
+
+def find_schema_for_entity(entity_label: str) -> Optional[Dict[str, Any]]:
+    """Find the schema definition for a specific entity by label."""
+    if not entity_label:
+        return None
+        
+    for source in get_collection_schemas():
+        for entity in source.get('entities', []):
+            if entity.get('label') == entity_label:
+                return entity
+    return None
+
+def flush_collection(mongo_db, collection_name):
+    """
+    Delete all documents from the specified MongoDB collection.
+    Call this before ingesting new data to avoid duplicates.
+    """
+    if collection_name in mongo_db.list_collection_names():
+        mongo_db[collection_name].delete_many({})
+        logging.info(f"Flushed collection '{collection_name}'.")
+    else:
+        logging.info(f"Collection '{collection_name}' does not exist, nothing to flush.")

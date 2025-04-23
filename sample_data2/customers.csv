@@ -1,0 +1,4 @@
+CustomerID,CustomerName,Email,PhoneNumber
+1,Alice Johnson,alice.johnson@example.com,111-222-3333
+2,Bob Smith,bob.smith@example.com,444-555-6666
+3,Charlie Brown,charlie.brown@example.com,777-888-9999

@@ -1,0 +1,20 @@
+[
+    {
+        "ProfitID": 1,
+        "SellerID": 1,
+        "Month": "2023-01",
+        "ProfitAmount": 100.00
+    },
+    {
+        "ProfitID": 2,
+        "SellerID": 2,
+        "Month": "2023-02",
+        "ProfitAmount": 50.00
+    },
+    {
+        "ProfitID": 3,
+        "SellerID": 3,
+        "Month": "2023-03",
+        "ProfitAmount": 120.00
+    }
+]

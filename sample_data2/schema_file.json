@@ -1,0 +1,39 @@
+[
+    {
+        "source_name": "UniversityData",
+        "source_type": "CSV",
+        "entities": [
+            {
+                "label": "Students",
+                "columns": [
+                    {"label": "student_id", "data_type": "INT", "is_primary_key": true},
+                    {"label": "name", "data_type": "STRING", "required": true},
+                    {"label": "age", "data_type": "INT"},
+                    {"label": "enrollment_date", "data_type": "DATE"}
+                ]
+            },
+            {
+                "label": "Courses",
+                "columns": [
+                    {"label": "course_id", "data_type": "INT", "is_primary_key": true},
+                    {"label": "course_name", "data_type": "STRING", "required": true},
+                    {"label": "credits", "data_type": "INT"}
+                ]
+            }
+        ]
+    },
+    {
+        "source_name": "UniversityDataJSON",
+        "source_type": "JSON",
+        "entities": [
+            {
+                "label": "Professors",
+                "fields": [
+                    {"label": "professor_id", "data_type": "INT", "is_primary_key": true},
+                    {"label": "name", "data_type": "STRING", "required": true},
+                    {"label": "department", "data_type": "STRING"}
+                ]
+            }
+        ]
+    }
+]

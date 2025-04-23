@@ -1,0 +1,42 @@
+[
+    {
+        "description": "List all vendors and their contact information.",
+        "query": {
+            "collection": "Vendors",
+            "filter": {},
+            "projection": {"_id": 0}
+        }
+    },
+    {
+        "description": "Find all sellers associated with a specific vendor.",
+        "query": {
+            "collection": "Sellers",
+            "filter": {"VendorID": 1},
+            "projection": {"_id": 0}
+        }
+    },
+    {
+        "description": "Retrieve all customers and their contact details.",
+        "query": {
+            "collection": "Customers",
+            "filter": {},
+            "projection": {"_id": 0}
+        }
+    },
+    {
+        "description": "List all orders with customer and seller details.",
+        "query": {
+            "collection": "Orders",
+            "filter": {},
+            "projection": {"_id": 0}
+        }
+    },
+    {
+        "description": "Find profits for a specific seller.",
+        "query": {
+            "collection": "Profits",
+            "filter": {"SellerID": 1},
+            "projection": {"_id": 0}
+        }
+    }
+]

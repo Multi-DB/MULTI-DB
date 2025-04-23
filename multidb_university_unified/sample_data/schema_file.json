@@ -1,0 +1,97 @@
+[
+    {
+        "source_type": "relational",
+        "source_name": "UniversityDB",
+        "entities": [
+            {
+                "type": "table",
+                "label": "Students",
+                "columns": [
+                    {"label": "StudentID", "data_type": "INT", "is_primary_key": true},
+                    {"label": "FirstName", "data_type": "VARCHAR(50)"},
+                    {"label": "LastName", "data_type": "VARCHAR(50)"},
+                    {"label": "DateOfBirth", "data_type": "DATE"},
+                    {"label": "Gender", "data_type": "VARCHAR(1)"},
+                    {"label": "Email", "data_type": "VARCHAR(100)"},
+                    {"label": "Phone", "data_type": "VARCHAR(15)"},
+                    {"label": "Address", "data_type": "VARCHAR(255)"},
+                    {"label": "EnrollmentDate", "data_type": "DATE"},
+                    {"label": "Major", "data_type": "VARCHAR(100)"},
+                    {"label": "GPA", "data_type": "DECIMAL(3,2)"}
+                ]
+            },
+            {
+                "type": "table",
+                "label": "Courses",
+                "columns": [
+                    {"label": "CourseID", "data_type": "INT", "is_primary_key": true},
+                    {"label": "CourseCode", "data_type": "VARCHAR(10)"},
+                    {"label": "CourseName", "data_type": "VARCHAR(100)"},
+                    {"label": "CreditHours", "data_type": "INT"},
+                    {"label": "Department", "data_type": "VARCHAR(100)"}
+                ]
+            },
+            {
+                "type": "table",
+                "label": "Enrollments",
+                "columns": [
+                    {"label": "EnrollmentID", "data_type": "INT", "is_primary_key": true},
+                    {"label": "StudentID", "data_type": "INT", "is_foreign_key": true, "references": "Students"},
+                    {"label": "CourseID", "data_type": "INT", "is_foreign_key": true, "references": "Courses"},
+                    {"label": "Semester", "data_type": "VARCHAR(6)"},
+                    {"label": "Year", "data_type": "INT"},
+                    {"label": "Grade", "data_type": "VARCHAR(2)"}
+                ]
+            }
+        ]
+    },
+    {
+        "source_type": "document",
+        "source_name": "UniversityActivities",
+        "entities": [
+            {
+                "type": "json_objects",
+                "label": "HackathonParticipations",
+                "fields": [
+                    {"label": "ActivityID", "data_type": "STRING", "is_primary_key": true, "json_path": "activityId"},
+                    {"label": "StudentID", "data_type": "INT", "is_foreign_key": true, "references": "Students", "json_path": "studentRef"},
+                    {"label": "HackathonName", "data_type": "STRING", "json_path": "eventName"},
+                    {"label": "TeamName", "data_type": "STRING", "json_path": "team"},
+                    {"label": "ProjectTitle", "data_type": "STRING", "json_path": "project.title"},
+                    {"label": "ProjectDescription", "data_type": "STRING", "json_path": "project.desc"},
+                    {"label": "ParticipationDate", "data_type": "DATE", "json_path": "date"},
+                    {"label": "AwardsWon", "data_type": "ARRAY<STRING>", "json_path": "results.awards"},
+                    {"label": "SkillsUsed", "data_type": "ARRAY<STRING>", "json_path": "results.skills"}
+                ]
+            },
+            {
+                "type": "json_objects",
+                "label": "SportsParticipations",
+                "fields": [
+                    {"label": "ActivityID", "data_type": "STRING", "is_primary_key": true, "json_path": "_id"},
+                    {"label": "StudentID", "data_type": "INT", "is_foreign_key": true, "references": "Students", "json_path": "studentIdentifier"},
+                    {"label": "SportName", "data_type": "STRING", "json_path": "details.sport"},
+                    {"label": "TeamName", "data_type": "STRING", "json_path": "details.team"},
+                    {"label": "Position", "data_type": "STRING", "json_path": "details.pos"},
+                    {"label": "Season", "data_type": "STRING", "json_path": "stats.season"},
+                    {"label": "MatchesPlayed", "data_type": "INT", "json_path": "stats.played"},
+                    {"label": "Achievements", "data_type": "ARRAY<STRING>", "json_path": "notes"}
+                ]
+            },
+            {
+                "type": "xml_structure",
+                "label": "StudentClubs",
+                "xpath_base": "//Membership",
+                "fields": [
+                    {"label": "MembershipID", "data_type": "STRING", "is_primary_key": true, "xpath": "@id"},
+                    {"label": "StudentID", "data_type": "INT", "is_foreign_key": true, "references": "Students", "xpath": "@studentId"},
+                    {"label": "ClubName", "data_type": "STRING", "xpath": "ClubName"},
+                    {"label": "Role", "data_type": "STRING", "xpath": "Role"},
+                    {"label": "JoinDate", "data_type": "DATE", "xpath": "Joined"},
+                    {"label": "Active", "data_type": "BOOLEAN", "xpath": "@active"},
+                    {"label": "MeetingsAttended", "data_type": "INT", "xpath": "Attendance/@count"}
+                ]
+            }
+        ]
+    }
+]

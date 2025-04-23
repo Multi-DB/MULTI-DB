@@ -2,7 +2,6 @@
 import logging
 from pymongo.database import Database
 from graph_models import GraphNode, GraphEdge
-from data_models import get_collection_schemas
 import config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,11 +22,38 @@ class MetadataManager:
         self._entity_node_cache = {}
         logging.info("Metadata graph cleared.")
 
-    def build_graph_from_schema(self):
-        """Builds the metadata graph based on logical entities defined in data_models.py."""
+    def build_graph_from_schema(self, schemas=None):
+        """Builds the metadata graph based on logical entities defined in schemas."""
         logging.info("Building metadata graph from schema...")
         self.clear_graph()
-        schemas = get_collection_schemas()
+        
+        # If schemas parameter is None, try to get schemas from the main module
+        if schemas is None:
+            try:
+                # Try to import from main for backward compatibility
+                from main import SCHEMAS
+                schemas = []
+                # Convert dictionary to list of source schemas
+                source_types = {}
+                for entity_label, entity in SCHEMAS.items():
+                    source_name = entity.get("source_name")
+                    source_type = entity.get("source_type")
+                    
+                    if (source_name, source_type) not in source_types:
+                        source_types[(source_name, source_type)] = {
+                            "source_name": source_name,
+                            "source_type": source_type,
+                            "entities": []
+                        }
+                    
+                    # Add entity to appropriate source
+                    source_types[(source_name, source_type)]["entities"].append(entity)
+                
+                # Convert to list format
+                schemas = list(source_types.values())
+            except (ImportError, AttributeError):
+                logging.error("No schemas provided and couldn't import from main.")
+                return
 
         entity_nodes_to_process_fk = [] # Store (entity_node, entity_schema)
 

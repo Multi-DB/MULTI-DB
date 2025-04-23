@@ -1,0 +1,23 @@
+<Orders>
+    <Order>
+        <OrderID>1</OrderID>
+        <CustomerID>1</CustomerID>
+        <SellerID>1</SellerID>
+        <OrderDate>2023-01-15</OrderDate>
+        <TotalAmount>250.00</TotalAmount>
+    </Order>
+    <Order>
+        <OrderID>2</OrderID>
+        <CustomerID>2</CustomerID>
+        <SellerID>2</SellerID>
+        <OrderDate>2023-02-10</OrderDate>
+        <TotalAmount>150.00</TotalAmount>
+    </Order>
+    <Order>
+        <OrderID>3</OrderID>
+        <CustomerID>3</CustomerID>
+        <SellerID>3</SellerID>
+        <OrderDate>2023-03-05</OrderDate>
+        <TotalAmount>300.00</TotalAmount>
+    </Order>
+</Orders>
