@@ -1,7 +1,7 @@
 [
     {
         "entity_label": "Products",
-        "file_path": "sample_data/products.csv",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/products.csv",
         "fields": [
             { "name": "product_id", "type": "string", "required": true },
             { "name": "name", "type": "string", "required": true },
@@ -11,7 +11,7 @@
     },
     {
         "entity_label": "Customers",
-        "file_path": "sample_data/customers.csv",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/customers.csv",
         "fields": [
             { "name": "customer_id", "type": "string", "required": true },
             { "name": "name", "type": "string", "required": true },
@@ -21,18 +21,30 @@
     },
     {
         "entity_label": "Sales",
-        "file_path": "sample_data/sales.csv",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/sales.csv",
         "fields": [
             { "name": "sale_id", "type": "string", "required": true },
             { "name": "product_id", "type": "string", "required": true },
             { "name": "customer_id", "type": "string", "required": true },
             { "name": "date", "type": "date", "required": true },
             { "name": "amount", "type": "number", "required": true }
+        ],
+        "relationships": [
+            {
+                "related_entity": "Products",
+                "local_field": "product_id",
+                "foreign_field": "product_id"
+            },
+            {
+                "related_entity": "Customers",
+                "local_field": "customer_id",
+                "foreign_field": "customer_id"
+            }
         ]
     },
     {
         "entity_label": "Suppliers",
-        "file_path": "sample_data/suppliers.json",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/suppliers.json",
         "fields": [
             { "name": "supplier_id", "type": "string", "required": true },
             { "name": "name", "type": "string", "required": true },
@@ -41,16 +53,23 @@
     },
     {
         "entity_label": "Inventory",
-        "file_path": "sample_data/inventory.json",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/inventory.json",
         "fields": [
             { "name": "inventory_id", "type": "string", "required": true },
             { "name": "product_id", "type": "string", "required": true },
             { "name": "quantity", "type": "number", "required": true }
+        ],
+        "relationships": [
+            {
+                "related_entity": "Products",
+                "local_field": "product_id",
+                "foreign_field": "product_id"
+            }
         ]
     },
     {
         "entity_label": "Promotions",
-        "file_path": "sample_data/promotions.xml",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/promotions.xml",
         "fields": [
             { "name": "promotion_id", "type": "string", "required": true },
             { "name": "description", "type": "string", "required": true },

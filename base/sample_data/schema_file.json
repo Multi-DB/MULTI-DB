@@ -1,0 +1,92 @@
+[
+    {
+        "entity_label": "Students",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/students.csv",
+        "fields": [
+            {"name": "StudentID", "type": "integer", "required": true},
+            {"name": "FirstName", "type": "string"},
+            {"name": "LastName", "type": "string"},
+            {"name": "DateOfBirth", "type": "string"},
+            {"name": "Gender", "type": "string"},
+            {"name": "Email", "type": "string"},
+            {"name": "Phone", "type": "string"},
+            {"name": "Address", "type": "string"},
+            {"name": "EnrollmentDate", "type": "string"},
+            {"name": "Major", "type": "string"},
+            {"name": "GPA", "type": "number"}
+        ]
+    },
+    {
+        "entity_label": "Courses",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/courses.csv",
+        "fields": [
+            {"name": "CourseID", "type": "integer", "required": true},
+            {"name": "CourseCode", "type": "string"},
+            {"name": "CourseName", "type": "string"},
+            {"name": "CreditHours", "type": "integer"},
+            {"name": "Department", "type": "string"}
+        ]
+    },
+    {
+        "entity_label": "Enrollments",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/enrollments.csv",
+        "fields": [
+            {"name": "EnrollmentID", "type": "integer", "required": true},
+            {"name": "StudentID", "type": "integer", "required": true},
+            {"name": "CourseID", "type": "integer", "required": true},
+            {"name": "Semester", "type": "string"},
+            {"name": "Year", "type": "integer"},
+            {"name": "Grade", "type": "string"}
+        ],
+        "relationships": [
+            {"related_entity": "Students", "local_field": "StudentID", "foreign_field": "StudentID"},
+            {"related_entity": "Courses", "local_field": "CourseID", "foreign_field": "CourseID"}
+        ]
+    },
+    {
+        "entity_label": "Hackathons",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/hackathons.json",
+        "fields": [
+            {"name": "activityId", "type": "string", "required": true},
+            {"name": "studentRef", "type": "integer", "required": true},
+            {"name": "eventName", "type": "string"},
+            {"name": "team", "type": "string"},
+            {"name": "project", "type": "object"},
+            {"name": "date", "type": "string"},
+            {"name": "results", "type": "object"}
+        ],
+        "relationships": [
+            {"related_entity": "Students", "local_field": "studentRef", "foreign_field": "StudentID"}
+        ]
+    },
+    {
+        "entity_label": "Sports",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/sports.json",
+        "fields": [
+            {"name": "_id", "type": "string", "required": true},
+            {"name": "studentIdentifier", "type": "integer", "required": true},
+            {"name": "details", "type": "object"},
+            {"name": "stats", "type": "object"},
+            {"name": "notes", "type": "array"}
+        ],
+        "relationships": [
+            {"related_entity": "Students", "local_field": "studentIdentifier", "foreign_field": "StudentID"}
+        ]
+    },
+    {
+        "entity_label": "Clubs",
+        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/student_clubs.xml",
+        "fields": [
+            {"name": "id", "type": "string", "required": true},
+            {"name": "studentId", "type": "integer", "required": true},
+            {"name": "active", "type": "string"},
+            {"name": "ClubName", "type": "string"},
+            {"name": "Role", "type": "string"},
+            {"name": "Joined", "type": "string"},
+            {"name": "Attendance", "type": "string"}
+        ],
+        "relationships": [
+            {"related_entity": "Students", "local_field": "studentId", "foreign_field": "StudentID"}
+        ]
+    }
+]

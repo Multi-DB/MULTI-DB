@@ -1,0 +1,62 @@
+[
+    {
+        "description": "Retrieve all products with price greater than $50",
+        "type": "within",
+        "query": {
+            "collection": "Products",
+            "filter": { "price": { "$gt": 50 } }
+        }
+    },
+    {
+        "description": "Find all customers with email addresses",
+        "type": "within",
+        "query": {
+            "collection": "Customers",
+            "filter": { "email": { "$exists": true, "$ne": "" } }
+        }
+    },
+    {
+        "description": "Get all sales made in January 2023",
+        "type": "within",
+        "query": {
+            "collection": "Sales",
+            "filter": {
+                "sale_date": {
+                    "$gte": "2023-01-01",
+                    "$lte": "2023-01-31"
+                }
+            }
+        }
+    },
+    {
+        "description": "Find sales details with product and customer names for Jan 2023",
+        "type": "across",
+        "query": {
+            "start_entity": "Sales",
+            "filter": {
+                "sale_date": {
+                    "$gte": "2023-01-01",
+                    "$lte": "2023-01-31"
+                }
+            },
+            "projection": {
+                "Sales": 1,
+                "Products": 1,
+                "Customers": 1
+            }
+        }
+    },
+    {
+        "description": "Find products purchased by customer '101'",
+        "type": "across",
+        "query": {
+            "start_entity": "Sales",
+            "filter": {
+                "customer_id": "101"
+            },
+            "projection": {
+                "Products": 1
+            }
+        }
+    }
+]
