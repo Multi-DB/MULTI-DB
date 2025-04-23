@@ -1,0 +1,6 @@
+[
+    {"product_id": 1, "stock": 50},
+    {"product_id": 2, "stock": 30},
+    {"product_id": 3, "stock": 100},
+    {"product_id": 4, "stock": 200}
+]

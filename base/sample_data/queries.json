@@ -1,0 +1,75 @@
+[
+    {
+        "description": "Find all students majoring in Computer Science",
+        "type": "within",
+        "query": {
+            "collection": "Students",
+            "filter": { "Major": "Computer Science" }
+        }
+    },
+    {
+        "description": "Find all courses in the Biology department",
+        "type": "within",
+        "query": {
+            "collection": "Courses",
+            "filter": { "Department": "Biology" }
+        }
+    },
+    {
+        "description": "Find enrollments with grade 'A'",
+        "type": "within",
+        "query": {
+            "collection": "Enrollments",
+            "filter": { "Grade": "A" }
+        }
+    },
+    {
+        "description": "Find courses taken by student 1001",
+        "type": "across",
+        "query": {
+            "start_entity": "Enrollments",
+            "filter": { "StudentID": 1001 },
+            "projection": {
+                "Enrollments": 1,
+                "Courses": 1,
+                "Students": 1
+            }
+        }
+    },
+    {
+        "description": "Find hackathons participated in by student 1002",
+        "type": "across",
+        "query": {
+            "start_entity": "Hackathons",
+            "filter": { "studentRef": 1002 },
+            "projection": {
+                "Hackathons": 1,
+                "Students": 1
+            }
+        }
+    },
+    {
+        "description": "Find clubs joined by student 1007",
+        "type": "across",
+        "query": {
+            "start_entity": "Clubs",
+            "filter": { "studentId": 1007 },
+            "projection": {
+                "Clubs": 1,
+                "Students": 1
+            }
+        }
+    },
+    {
+        "description": "Find sports played by student 1003",
+        "type": "across",
+        "query": {
+            "start_entity": "Sports",
+            "filter": { "studentIdentifier": 1003 },
+            "projection": {
+                "Sports": 1,
+                "Students": 1
+            }
+        }
+    }
+]

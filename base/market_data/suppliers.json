@@ -1,0 +1,4 @@
+[
+    {"supplier_id": 1, "supplier_name": "Tech Supplies Inc.", "contact": "techsupplies@example.com"},
+    {"supplier_id": 2, "supplier_name": "Furniture Co.", "contact": "furnitureco@example.com"}
+]

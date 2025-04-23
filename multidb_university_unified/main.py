@@ -1,6 +1,7 @@
 # main.py
 import logging
 import os
+import json
 from pymongo import MongoClient
 # Use python-dateutil for flexible parsing if needed, install via pip
 # import dateutil.parser
@@ -14,53 +15,145 @@ from query_parser import parse_query # Still conceptual
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s')
 
-# --- Define Sample Data Files ---
-SAMPLE_DATA_DIR = "sample_data"
-# Map Logical Entity Label to File Name
-SAMPLE_FILES = {
+
+# Define a base directory for data files
+BASE_DATA_DIR = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/multidb_university_unified/sample_data"
+
+# Automatically map file extensions to their common types
+FILE_TYPE_MAP = {
+    '.csv': 'table',
+    '.xml': 'xml_structure',
+    '.json': 'json_objects'
+}
+
+SCHEMA_FILE = os.path.join(BASE_DATA_DIR, "schema_file.json")
+QUERY_FILE = os.path.join(BASE_DATA_DIR, "queries.json")
+
+def resolve_file_path(relative_path):
+    """Resolve a relative file path to an absolute path based on the base directory."""
+    return os.path.join(BASE_DATA_DIR, relative_path)
+
+def load_schemas():
+    """Load schemas from the external schema file."""
+    if not os.path.exists(SCHEMA_FILE):
+        logging.error(f"Schema file '{SCHEMA_FILE}' not found.")
+        return {}
+    try:
+        with open(SCHEMA_FILE, "r") as file:
+            schemas = json.load(file)
+            
+            # Process schemas into a structured format
+            result = {}
+            for source in schemas:
+                for entity in source.get("entities", []):
+                    entity_label = entity.get("label")
+                    if entity_label:
+                        # Add source metadata to entity
+                        entity["source_type"] = source.get("source_type")
+                        entity["source_name"] = source.get("source_name")
+                        
+                        # Add file path based on entity label if not present
+                        if "file_path" not in entity:
+                            for ext in ['.csv', '.xml', '.json']:
+                                potential_path = os.path.join(BASE_DATA_DIR, f"{entity_label.lower()}{ext}")
+                                if os.path.exists(potential_path):
+                                    entity["file_path"] = f"{entity_label.lower()}{ext}"
+                                    if "type" not in entity:
+                                        entity["type"] = FILE_TYPE_MAP.get(ext)
+                                    break
+                            
+                        result[entity_label] = entity
+            
+            return result
+    except Exception as e:
+        logging.error(f"Failed to load schemas from '{SCHEMA_FILE}': {e}")
+        return {}
+
+def find_schema_for_entity(entity_label):
+    """Retrieve the schema for a given entity label."""
+    return SCHEMAS.get(entity_label)
+
+# Define file mappings for entities
+ENTITY_FILE_MAPPING = {
     "Students": "students.csv",
     "Courses": "courses.csv",
     "Enrollments": "enrollments.csv",
-    "HackathonParticipations": "hackathons.json",
-    "SportsParticipations": "sports.json",
     "StudentClubs": "student_clubs.xml",
+    "SportsParticipations": "sports.json",
+    "HackathonParticipations": "hackathons.json"
 }
+
+def flush_collection(mongo_db, collection_name):
+    """Flush (clear) the specified MongoDB collection."""
+    try:
+        mongo_db[collection_name].delete_many({})
+        logging.info(f"Flushed collection: {collection_name}")
+    except Exception as e:
+        logging.error(f"Failed to flush collection '{collection_name}': {e}")
 
 def run_setup_and_ingestion(metadata_mgr: MetadataManager, data_mgr: DataManager, force_reingest=False):
     """Runs the metadata build, collection setup, and data ingestion."""
     logging.info("--- Running Setup and Ingestion ---")
 
+    # Convert SCHEMAS dictionary to the format expected by metadata_mgr.build_graph_from_schema
+    source_schemas = {}
+    for entity_label, entity in SCHEMAS.items():
+        source_key = (entity.get("source_name", "unknown"), entity.get("source_type", "unknown"))
+        if source_key not in source_schemas:
+            source_schemas[source_key] = {
+                "source_name": source_key[0],
+                "source_type": source_key[1],
+                "entities": []
+            }
+        source_schemas[source_key]["entities"].append(entity)
+    
+    schema_list = list(source_schemas.values())
+    
     # 1. Build Metadata Graph
     logging.info("Step 1: Building/Rebuilding Metadata Graph...")
-    metadata_mgr.build_graph_from_schema()
+    metadata_mgr.build_graph_from_schema(schema_list)
 
     # 2. Setup MongoDB Collections
     logging.info("Step 2: Setting up MongoDB collections...")
+    collections_to_flush = [
+        "Students",
+        "Courses",
+        "Enrollments",
+        "HackathonParticipations",
+        "SportsParticipations",
+        "StudentClubs"
+    ]
+    for collection in collections_to_flush:
+        flush_collection(data_mgr.db, collection)
     data_mgr.setup_collections_with_validation()
 
-    # 3. Ingest Data from Files
+    # 3. Register parsers
+    data_mgr.register_parser("table", data_mgr._parse_csv)
+    data_mgr.register_parser("xml_structure", data_mgr._parse_xml)
+    data_mgr.register_parser("json_objects", data_mgr._parse_json)
+
+    # 4. Ingest Data from Files
     logging.info("Step 3: Ingesting data from source files...")
-    if not os.path.exists(SAMPLE_DATA_DIR):
-        logging.warning(f"Sample data directory '{SAMPLE_DATA_DIR}' not found. Skipping ingestion.")
-        return
-
-    for entity_label, filename in SAMPLE_FILES.items():
-        filepath = os.path.join(SAMPLE_DATA_DIR, filename)
-        if os.path.exists(filepath):
-             collection = data_mgr._get_data_collection(entity_label)
-             # Ingest only if collection is empty OR force_reingest is True
-             if force_reingest or collection.count_documents({}) == 0:
-                 if force_reingest and collection.count_documents({}) > 0:
-                      logging.warning(f"Forcing re-ingestion for '{entity_label}'. Clearing existing data...")
-                      collection.delete_many({})
-                 data_mgr.ingest_and_process_file(entity_label, filepath)
-             else:
-                 logging.info(f"Skipping ingestion for '{entity_label}', collection already contains data.")
+    
+    for entity_label, schema in SCHEMAS.items():
+        # Use direct mapping from entity to filename
+        if entity_label in ENTITY_FILE_MAPPING:
+            file_name = ENTITY_FILE_MAPPING[entity_label]
+            file_path = os.path.join(BASE_DATA_DIR, file_name)
+            
+            if not os.path.exists(file_path):
+                logging.warning(f"File for entity '{entity_label}' not found at '{file_path}'. Skipping ingestion.")
+                continue
+            
+            try:
+                data_mgr.ingest_file(entity_label, file_path)
+                logging.info(f"Successfully ingested data for entity '{entity_label}' from file: {file_path}")
+            except Exception as e:
+                logging.error(f"Failed to ingest data for entity '{entity_label}': {e}")
         else:
-            logging.warning(f"Sample file not found for entity '{entity_label}': {filepath}. Skipping ingestion.")
-
+            logging.warning(f"No file mapping found for entity '{entity_label}'. Skipping ingestion.")
+    
     logging.info("--- Setup and Ingestion Complete ---")
-
 
 def run():
     """Main execution function."""
@@ -79,105 +172,24 @@ def run():
     data_mgr = DataManager(db)
 
     # --- 3. Run Setup and Ingestion ---
-    # Set force_reingest=True ONLY if you want to clear collections and reload data
     run_setup_and_ingestion(metadata_mgr, data_mgr, force_reingest=False)
 
+    # --- 4. Process Queries from JSON File ---
+    print("\n" + "="*10 + " RUNNING QUERIES " + "="*10)
+    if not os.path.exists(QUERY_FILE):
+        logging.error(f"Query file '{QUERY_FILE}' not found. Exiting.")
+        return
 
-    # --- 4. Retrieval Examples ---
-    print("\n" + "="*10 + " RUNNING UNIVERSITY QUERIES " + "="*10)
+    try:
+        with open(QUERY_FILE, "r") as file:
+            queries = json.load(file)
+    except Exception as e:
+        logging.error(f"Failed to load queries from '{QUERY_FILE}': {e}")
+        return
 
-    # Example 1: Get data from CSV source (Students) with filter
-    print("\n--- Query 1: Get Computer Science Students ---")
-    query1 = {"action": "get_entity", "entity": "Students", "filters": {"Major": "Computer Science"}}
-    data_mgr.retrieve_data(query1)
-
-    # Example 2: Get data from JSON source (Hackathons) with specific fields
-    print("\n--- Query 2: Get Hackathon Names and Project Titles ---")
-    query2 = {"action": "get_entity", "entity": "HackathonParticipations", "fields": ["HackathonName", "ProjectTitle", "ActivityID"]}
-    data_mgr.retrieve_data(query2)
-
-    # Example 3: Get data from XML source (Clubs)
-    print("\n--- Query 3: Get all Student Club Memberships ---")
-    query3 = {"action": "get_entity", "entity": "StudentClubs"} # Request all default fields
-    data_mgr.retrieve_data(query3)
-
-    # Example 4: Cross-Source Query (Students(CSV) -> Enrollments(CSV) -> Courses(CSV))
-    print("\n--- Query 4: Find Courses taken by Student John Smith (ID 1001) ---")
-    query4 = {
-        "action": "get_related",
-        "start_entity": "Students",
-        "start_filters": {"StudentID": 1001},
-        "relations": [
-            # Students (PK: StudentID) <- Enrollments (FK: StudentID)
-            {"relation": "REFERENCES", "direction": "in", "target_entity": "Enrollments"},
-            # Enrollments (FK: CourseID) -> Courses (PK: CourseID)
-            {"relation": "REFERENCES", "direction": "out", "target_entity": "Courses"}
-        ],
-        "final_fields": {
-            "Students": ["FirstName", "LastName"],
-            "Enrollments": ["Semester", "Year", "Grade"], # Fields from intermediate entity
-            "Courses": ["CourseName", "CourseCode"]
-        }
-    }
-    data_mgr.retrieve_data(query4)
-
-    # Example 5: Cross-Source Query (Students(CSV) -> HackathonParticipations(JSON))
-    print("\n--- Query 5: Find Hackathons participated in by Biology students ---")
-    query5 = {
-        "action": "get_related",
-        "start_entity": "Students",
-        "start_filters": {"Major": "Biology"},
-        "relations": [
-            # Students (PK: StudentID) <- HackathonParticipations (FK: StudentID)
-            {"relation": "REFERENCES", "direction": "in", "target_entity": "HackathonParticipations"}
-        ],
-        "final_fields": {
-            "Students": ["FirstName", "LastName", "Major"],
-            "HackathonParticipations": ["HackathonName", "ProjectTitle", "AwardsWon"]
-        }
-    }
-    data_mgr.retrieve_data(query5)
-
-    # Example 6: Cross-Source Query (Students(CSV) -> StudentClubs(XML))
-    print("\n--- Query 6: Find Clubs joined by Student Sophia Lee (ID 1004) ---")
-    query6 = {
-        "action": "get_related",
-        "start_entity": "Students",
-        "start_filters": {"StudentID": 1004},
-        "relations": [
-            # Students (PK: StudentID) <- StudentClubs (FK: StudentID)
-            {"relation": "REFERENCES", "direction": "in", "target_entity": "StudentClubs"}
-        ],
-        "final_fields": {
-            "Students": ["FirstName", "LastName"],
-            "StudentClubs": ["ClubName", "Role", "JoinDate"]
-        }
-    }
-    data_mgr.retrieve_data(query6)
-
-    # Example 7: More Complex Query (Courses(CSV) -> Enrollments(CSV) -> Students(CSV) -> SportsParticipations(JSON))
-    print("\n--- Query 7: Find Sports activities of Students enrolled in 'CS101' ---")
-    query7 = {
-        "action": "get_related",
-        "start_entity": "Courses",
-        "start_filters": {"CourseCode": "CS101"},
-        "relations": [
-            # Courses (PK) <- Enrollments (FK)
-            {"relation": "REFERENCES", "direction": "in", "target_entity": "Enrollments"},
-            # Enrollments (FK) -> Students (PK)
-            {"relation": "REFERENCES", "direction": "out", "target_entity": "Students"},
-             # Students (PK) <- SportsParticipations (FK)
-            {"relation": "REFERENCES", "direction": "in", "target_entity": "SportsParticipations"}
-        ],
-        "final_fields": {
-            "Courses": ["CourseName"],
-            # "Enrollments": [], # Optionally skip intermediate fields
-            "Students": ["FirstName", "LastName", "Major"],
-            "SportsParticipations": ["SportName", "TeamName", "Achievements"]
-        }
-    }
-    data_mgr.retrieve_data(query7)
-
+    for i, query in enumerate(queries, start=1):
+        print(f"\n--- Query {i}: {query.get('description', 'No Description')} ---")
+        data_mgr.retrieve_data(query["query"])
 
     print("\n" + "="*10 + " QUERIES COMPLETE " + "="*10)
 
@@ -186,4 +198,5 @@ def run():
     logging.info("MongoDB connection closed.")
 
 if __name__ == "__main__":
+    SCHEMAS = load_schemas()  # Load schemas dynamically
     run()
