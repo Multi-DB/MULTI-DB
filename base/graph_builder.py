@@ -2,6 +2,9 @@ import json
 import csv
 import os
 import xml.etree.ElementTree as ET
+
+from bson import ObjectId
+
 from connection import get_mongo_connection
 
 class GraphBuilder:
@@ -62,10 +65,16 @@ class GraphBuilder:
 
                 # Add documents as nodes
                 for document in documents:
+                    # Ensure _id is converted to string for consistent node IDs
+                    doc_data = document.copy()
+                    # Convert ObjectId to string for storage in the graph node data if desired
+                    # This keeps the original ObjectId in the source collection
+                    if '_id' in doc_data and isinstance(doc_data['_id'], ObjectId):
+                         doc_data['_id'] = str(doc_data['_id'])
                     graph["nodes"].append({
-                        "id": str(document["_id"]),
+                        "id": str(document["_id"]), # Use string representation of ObjectId as the node ID
                         "entity": collection_name,
-                        "data": document
+                        "data": doc_data # Store the document data
                     })
 
                 # Process relationships
@@ -75,18 +84,36 @@ class GraphBuilder:
                         related_collection = relationship["related_entity"]
                         local_field = relationship["local_field"]
                         foreign_field = relationship["foreign_field"]
+                        # Get relationship type from schema; raise error if missing
+                        if "type" not in relationship:
+                            raise ValueError(f"Missing 'type' key in relationship definition for entity '{collection_name}' relating to '{related_collection}'. Please define the relationship type in the schema.")
+                        relationship_type = relationship["type"]
 
                         # Create edges by linking related documents
                         for document in documents:
-                            related_documents = self.db[related_collection].find(
-                                {foreign_field: document[local_field]}
-                            )
-                            for related_document in related_documents:
-                                graph["edges"].append({
-                                    "source": str(document["_id"]),
-                                    "target": str(related_document["_id"]),
-                                    "relationship": relationship.get("type", "related")
-                                })
+                            # Ensure the value used for lookup matches the type in the related collection
+                            lookup_value = document.get(local_field)
+                            if lookup_value is None:
+                                print(f"Warning: Skipping relationship lookup for document {document.get('_id')} in '{collection_name}' because local field '{local_field}' is missing or null.")
+                                continue # Skip if the local field is missing or null
+
+                            # Attempt to find related documents
+                            try:
+                                related_documents = list(self.db[related_collection].find(
+                                    {foreign_field: lookup_value}
+                                ))
+                                if not related_documents:
+                                     print(f"Warning: No related document found in '{related_collection}' for {foreign_field}={lookup_value} (from document {document.get('_id')} in '{collection_name}')")
+
+                                for related_document in related_documents:
+                                    graph["edges"].append({
+                                        "source": str(document["_id"]),
+                                        "target": str(related_document["_id"]),
+                                        "relationship": relationship_type # Use defined type
+                                    })
+                            except Exception as find_error:
+                                print(f"Error finding related documents in '{related_collection}' for {foreign_field}={lookup_value}: {find_error}")
+
                 print(f"Added edges for relationships in collection '{collection_name}'.")
 
             # Store the graph in a dedicated collection
@@ -94,35 +121,52 @@ class GraphBuilder:
             self.db["Graph"].insert_one(graph)
 
             print("Dynamic graph built successfully and stored in 'Graph' collection.")
+        except ValueError as ve: # Catch the specific error for missing type
+            print(f"Schema Error: {ve}")
+            raise
         except Exception as e:
             print(f"Error building dynamic graph: {e}")
             raise
 
     def _load_csv(self, file_path, collection_name):
         """
-        Load data from a CSV file into a MongoDB collection.
+        Load data from a CSV file into a MongoDB collection, ensuring type consistency based on schema.
         """
         try:
             with open(file_path, 'r') as file:
                 reader = csv.DictReader(file)
                 data = []
+                entity_fields = self._get_entity_fields(collection_name)
                 for row in reader:
-                    # Convert numeric fields based on schema
-                    for field in self._get_entity_fields(collection_name):
+                    # Convert fields based on schema
+                    for field in entity_fields:
                         field_name = field["name"]
                         field_type = field["type"]
-                        if field_name in row:
-                            if field_type == "number":
-                                row[field_name] = float(row[field_name])
-                            elif field_type == "integer":
-                                row[field_name] = int(row[field_name])
+                        if field_name in row and row[field_name] is not None and row[field_name] != '':
+                            original_value = row[field_name]
+                            try:
+                                if field_type == "number":
+                                    row[field_name] = float(original_value)
+                                elif field_type == "integer":
+                                    row[field_name] = int(original_value)
+                                elif field_type == "string":
+                                    row[field_name] = str(original_value) # Explicit string conversion
+                                # Add other type conversions like 'date', 'boolean' if necessary
+                            except (ValueError, TypeError):
+                                print(f"Warning: Could not convert value '{original_value}' for field '{field_name}' to type '{field_type}' in {collection_name} (CSV). Keeping original string value.")
+                                row[field_name] = str(original_value) # Keep as string on error
                     data.append(row)
-                self.db[collection_name].delete_many({})
-                self.db[collection_name].insert_many(data)
-                print(f"Data from {file_path} loaded into {collection_name} collection.")
+                if data: # Only insert if data was successfully read
+                    self.db[collection_name].delete_many({})
+                    self.db[collection_name].insert_many(data)
+                    print(f"Data from {file_path} loaded into {collection_name} collection.")
+                else:
+                    print(f"No data loaded from {file_path} for {collection_name}.")
+        except FileNotFoundError:
+            print(f"Error: CSV file not found at {file_path}")
         except Exception as e:
-            print(f"Error loading CSV data: {e}")
-            raise
+            print(f"Error loading CSV data from {file_path}: {e}")
+            raise # Re-raise after logging
 
     def _get_entity_fields(self, collection_name):
         """
@@ -137,24 +181,59 @@ class GraphBuilder:
 
     def _load_json(self, file_path, collection_name):
         """
-        Load data from a JSON file into a MongoDB collection.
-
-        :param file_path: Path to the JSON file
-        :param collection_name: Name of the MongoDB collection
+        Load data from a JSON file into a MongoDB collection, ensuring type consistency based on schema.
         """
         try:
             with open(file_path, mode='r') as file:
                 data = json.load(file)
-                if isinstance(data, list):
-                    self.db[collection_name].insert_many(data)
-                elif isinstance(data, dict):
-                    self.db[collection_name].insert_one(data)
+                entity_fields = self._get_entity_fields(collection_name)
+                processed_data = []
+
+                items_to_process = data if isinstance(data, list) else [data]
+
+                for item in items_to_process:
+                    if not isinstance(item, dict): # Skip non-dict items in a list
+                        print(f"Warning: Skipping non-dictionary item in JSON file {file_path}: {item}")
+                        continue
+
+                    processed_item = item.copy() # Work on a copy
+                    for field in entity_fields:
+                        field_name = field["name"]
+                        field_type = field["type"]
+                        if field_name in processed_item and processed_item[field_name] is not None:
+                            original_value = processed_item[field_name]
+                            try:
+                                if field_type == "number":
+                                    processed_item[field_name] = float(original_value)
+                                elif field_type == "integer":
+                                    processed_item[field_name] = int(original_value)
+                                elif field_type == "string":
+                                     processed_item[field_name] = str(original_value) # Explicit string conversion
+                                # Add other type conversions like 'date', 'boolean' if necessary
+                            except (ValueError, TypeError):
+                                 print(f"Warning: Could not convert value '{original_value}' for field '{field_name}' to type '{field_type}' in {collection_name} (JSON). Keeping original value.")
+                                 # Decide how to handle error: keep original, set to None, or keep as string? Keeping as string for now.
+                                 processed_item[field_name] = str(original_value)
+
+                    processed_data.append(processed_item)
+
+                if processed_data:
+                    self.db[collection_name].delete_many({})
+                    if isinstance(data, list):
+                        self.db[collection_name].insert_many(processed_data)
+                    elif isinstance(data, dict):
+                         self.db[collection_name].insert_one(processed_data[0]) # Insert the single processed dict
+                    print(f"Data from {file_path} loaded into {collection_name} collection.")
                 else:
-                    raise TypeError("Unsupported JSON structure. Must be a dict or a list of dicts.")
-                print(f"Data from {file_path} loaded into {collection_name} collection.")
+                     print(f"No valid data processed from {file_path} for {collection_name}.")
+
+        except FileNotFoundError:
+            print(f"Error: JSON file not found at {file_path}")
+        except json.JSONDecodeError:
+            print(f"Error: Could not decode JSON from {file_path}")
         except Exception as e:
-            print(f"Error loading JSON data: {e}")
-            raise
+            print(f"Error loading JSON data from {file_path}: {e}")
+            raise # Re-raise after logging
 
     def _load_xml(self, file_path, collection_name, fields):
         """
@@ -228,7 +307,7 @@ class GraphBuilder:
             raise
 
 if __name__ == "__main__":
-    schema_file_path = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/schema_file.json"
+    schema_file_path = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/schema_file.json"
     graph_builder = GraphBuilder(schema_file_path)
     graph_builder.load_data_from_schema()
     graph_builder.build_graph()

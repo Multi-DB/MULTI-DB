@@ -1,43 +1,56 @@
 [
     {
-        "description": "Find all students majoring in Computer Science",
+        "description": "Find names and emails of students majoring in Computer Science",
         "type": "within",
         "query": {
             "collection": "Students",
-            "filter": { "Major": "Computer Science" }
+            "filter": { "Major": "Computer Science" },
+            "select": ["FirstName", "LastName", "Email", "Major"]
         }
     },
     {
-        "description": "Find all courses in the Biology department",
+        "description": "Find course codes and names in the Biology department",
         "type": "within",
         "query": {
             "collection": "Courses",
-            "filter": { "Department": "Biology" }
+            "filter": { "Department": "Biology" },
+            "select": ["CourseCode", "CourseName", "Department"]
         }
     },
     {
-        "description": "Find enrollments with grade 'A'",
-        "type": "within",
+        "description": "Find StudentID, Name, CourseID, and Grade for enrollments with grade 'A'",
+        "type": "across",
         "query": {
-            "collection": "Enrollments",
-            "filter": { "Grade": "A" }
+            "start_entity": "Enrollments",
+            "filter": { "Grade": "A" },
+            "projection": {
+                "Enrollments": 1,
+                "Students": 1
+            },
+            "select": {
+                "Enrollments": ["StudentID", "CourseID", "Grade"],
+                "Students": ["FirstName", "LastName"]
+            }
         }
     },
     {
-        "description": "Find courses taken by student 1001",
+        "description": "Find student name and course names for student 1001",
         "type": "across",
         "query": {
             "start_entity": "Enrollments",
             "filter": { "StudentID": 1001 },
             "projection": {
-                "Enrollments": 1,
                 "Courses": 1,
                 "Students": 1
+            },
+            "select": {
+                "Students": ["FirstName", "LastName"],
+                "Courses": ["CourseName"]
             }
         }
     },
     {
-        "description": "Find hackathons participated in by student 1002",
+        "description": "Find student name and hackathon event names for student 1002",
         "type": "across",
         "query": {
             "start_entity": "Hackathons",
@@ -45,11 +58,15 @@
             "projection": {
                 "Hackathons": 1,
                 "Students": 1
+            },
+            "select": {
+                "Students": ["FirstName", "LastName"],
+                "Hackathons": ["eventName", "project.title"]
             }
         }
     },
     {
-        "description": "Find clubs joined by student 1007",
+        "description": "Find student name and club names for student 1007",
         "type": "across",
         "query": {
             "start_entity": "Clubs",
@@ -57,11 +74,15 @@
             "projection": {
                 "Clubs": 1,
                 "Students": 1
+            },
+            "select": {
+                "Students": ["FirstName", "LastName"],
+                "Clubs": ["ClubName", "Role"]
             }
         }
     },
     {
-        "description": "Find sports played by student 1003",
+        "description": "Find student name and sport details for student 1003",
         "type": "across",
         "query": {
             "start_entity": "Sports",
@@ -69,6 +90,10 @@
             "projection": {
                 "Sports": 1,
                 "Students": 1
+            },
+            "select": {
+                "Students": ["FirstName", "LastName"],
+                "Sports": ["details.sport", "details.team"]
             }
         }
     }

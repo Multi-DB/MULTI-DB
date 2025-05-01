@@ -1,4 +1,0 @@
-# Project dependencies
-pymongo
-tabulate
-uuid

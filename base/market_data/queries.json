@@ -1,22 +1,24 @@
 [
     {
-        "description": "Retrieve all products with price greater than $50",
+        "description": "Retrieve only name and price for products with price > $50",
         "type": "within",
         "query": {
             "collection": "Products",
-            "filter": { "price": { "$gt": 50 } }
+            "filter": { "price": { "$gt": 50 } },
+            "select": ["product_name", "price"]
         }
     },
     {
-        "description": "Find all customers with email addresses",
+        "description": "Find customer names and emails for those with email addresses",
         "type": "within",
         "query": {
             "collection": "Customers",
-            "filter": { "email": { "$exists": true, "$ne": "" } }
+            "filter": { "email": { "$exists": true, "$ne": "" } },
+            "select": ["customer_name", "email"]
         }
     },
     {
-        "description": "Get all sales made in January 2023",
+        "description": "Get sale_id and quantity for sales made in January 2023",
         "type": "within",
         "query": {
             "collection": "Sales",
@@ -25,11 +27,12 @@
                     "$gte": "2023-01-01",
                     "$lte": "2023-01-31"
                 }
-            }
+            },
+            "select": ["sale_id", "quantity"]
         }
     },
     {
-        "description": "Find sales details with product and customer names for Jan 2023",
+        "description": "Find sale quantity, product name, and customer name for Jan 2023 sales",
         "type": "across",
         "query": {
             "start_entity": "Sales",
@@ -43,11 +46,16 @@
                 "Sales": 1,
                 "Products": 1,
                 "Customers": 1
+            },
+            "select": {
+                "Sales": ["quantity"],
+                "Products": ["product_name"],
+                "Customers": ["customer_name"]
             }
         }
     },
     {
-        "description": "Find products purchased by customer '101'",
+        "description": "Find only the names of products purchased by customer '101'",
         "type": "across",
         "query": {
             "start_entity": "Sales",
@@ -55,8 +63,10 @@
                 "customer_id": "101"
             },
             "projection": {
-                "Products": 1,
-                "Customers": 1
+                "Products": 1
+            },
+            "select": {
+                "Products": ["product_name"]
             }
         }
     }
