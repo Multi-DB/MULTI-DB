@@ -4,7 +4,7 @@
         "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/products.csv",
         "fields": [
             { "name": "product_id", "type": "string", "required": true },
-            { "name": "name", "type": "string", "required": true },
+            { "name": "product_name", "type": "string", "required": true },
             { "name": "price", "type": "number", "required": true },
             { "name": "category", "type": "string", "required": false }
         ]
@@ -14,8 +14,8 @@
         "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/customers.csv",
         "fields": [
             { "name": "customer_id", "type": "string", "required": true },
-            { "name": "name", "type": "string", "required": true },
-            { "name": "city", "type": "string", "required": false },
+            { "name": "customer_name", "type": "string", "required": true },
+            { "name": "phone", "type": "string", "required": false },
             { "name": "email", "type": "string", "required": false }
         ]
     },
@@ -26,19 +26,21 @@
             { "name": "sale_id", "type": "string", "required": true },
             { "name": "product_id", "type": "string", "required": true },
             { "name": "customer_id", "type": "string", "required": true },
-            { "name": "date", "type": "date", "required": true },
-            { "name": "amount", "type": "number", "required": true }
+            { "name": "sale_date", "type": "string", "required": true },
+            { "name": "quantity", "type": "integer", "required": true }
         ],
         "relationships": [
             {
                 "related_entity": "Products",
                 "local_field": "product_id",
-                "foreign_field": "product_id"
+                "foreign_field": "product_id",
+                "type": "includes_product"
             },
             {
                 "related_entity": "Customers",
                 "local_field": "customer_id",
-                "foreign_field": "customer_id"
+                "foreign_field": "customer_id",
+                "type": "purchased_by"
             }
         ]
     },
@@ -46,8 +48,8 @@
         "entity_label": "Suppliers",
         "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/suppliers.json",
         "fields": [
-            { "name": "supplier_id", "type": "string", "required": true },
-            { "name": "name", "type": "string", "required": true },
+            { "name": "supplier_id", "type": "integer", "required": true },
+            { "name": "supplier_name", "type": "string", "required": true },
             { "name": "contact", "type": "string", "required": false }
         ]
     },
@@ -55,15 +57,15 @@
         "entity_label": "Inventory",
         "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/inventory.json",
         "fields": [
-            { "name": "inventory_id", "type": "string", "required": true },
             { "name": "product_id", "type": "string", "required": true },
-            { "name": "quantity", "type": "number", "required": true }
+            { "name": "stock", "type": "integer", "required": true }
         ],
         "relationships": [
             {
                 "related_entity": "Products",
                 "local_field": "product_id",
-                "foreign_field": "product_id"
+                "foreign_field": "product_id",
+                "type": "inventory_of"
             }
         ]
     },
@@ -72,8 +74,10 @@
         "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/promotions.xml",
         "fields": [
             { "name": "promotion_id", "type": "string", "required": true },
-            { "name": "description", "type": "string", "required": true },
-            { "name": "discount", "type": "number", "required": true }
+            { "name": "product_id", "type": "string", "required": false },
+            { "name": "discount", "type": "number", "required": true },
+            { "name": "start_date", "type": "string", "required": false },
+            { "name": "end_date", "type": "string", "required": false }
         ]
     }
 ]

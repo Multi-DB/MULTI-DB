@@ -39,8 +39,8 @@
             {"name": "Grade", "type": "string"}
         ],
         "relationships": [
-            {"related_entity": "Students", "local_field": "StudentID", "foreign_field": "StudentID"},
-            {"related_entity": "Courses", "local_field": "CourseID", "foreign_field": "CourseID"}
+            {"related_entity": "Students", "local_field": "StudentID", "foreign_field": "StudentID", "type": "student_enrollment"},
+            {"related_entity": "Courses", "local_field": "CourseID", "foreign_field": "CourseID", "type": "course_enrollment"}
         ]
     },
     {
@@ -56,7 +56,7 @@
             {"name": "results", "type": "object"}
         ],
         "relationships": [
-            {"related_entity": "Students", "local_field": "studentRef", "foreign_field": "StudentID"}
+            {"related_entity": "Students", "local_field": "studentRef", "foreign_field": "StudentID", "type": "participated_in"}
         ]
     },
     {
@@ -70,7 +70,7 @@
             {"name": "notes", "type": "array"}
         ],
         "relationships": [
-            {"related_entity": "Students", "local_field": "studentIdentifier", "foreign_field": "StudentID"}
+            {"related_entity": "Students", "local_field": "studentIdentifier", "foreign_field": "StudentID", "type": "plays_sport"}
         ]
     },
     {
@@ -83,10 +83,10 @@
             {"name": "ClubName", "type": "string"},
             {"name": "Role", "type": "string"},
             {"name": "Joined", "type": "string"},
-            {"name": "Attendance", "type": "string"}
+            {"name": "AttendanceCount", "type": "integer"}
         ],
         "relationships": [
-            {"related_entity": "Students", "local_field": "studentId", "foreign_field": "StudentID"}
+            {"related_entity": "Students", "local_field": "studentId", "foreign_field": "StudentID", "type": "member_of"}
         ]
     }
 ]
