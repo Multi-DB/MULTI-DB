@@ -1,7 +1,7 @@
 [
     {
         "entity_label": "Products",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/products.csv",
+        "file_path": "market_data/products.csv",
         "fields": [
             { "name": "product_id", "type": "string", "required": true },
             { "name": "product_name", "type": "string", "required": true },
@@ -11,7 +11,7 @@
     },
     {
         "entity_label": "Customers",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/customers.csv",
+        "file_path": "market_data/customers.csv",
         "fields": [
             { "name": "customer_id", "type": "string", "required": true },
             { "name": "customer_name", "type": "string", "required": true },
@@ -21,7 +21,7 @@
     },
     {
         "entity_label": "Sales",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/sales.csv",
+        "file_path": "market_data/sales.csv",
         "fields": [
             { "name": "sale_id", "type": "string", "required": true },
             { "name": "product_id", "type": "string", "required": true },
@@ -46,7 +46,7 @@
     },
     {
         "entity_label": "Suppliers",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/suppliers.json",
+        "file_path": "market_data/suppliers.json",
         "fields": [
             { "name": "supplier_id", "type": "integer", "required": true },
             { "name": "supplier_name", "type": "string", "required": true },
@@ -55,7 +55,7 @@
     },
     {
         "entity_label": "Inventory",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/inventory.json",
+        "file_path": "market_data/inventory.json",
         "fields": [
             { "name": "product_id", "type": "string", "required": true },
             { "name": "stock", "type": "integer", "required": true }
@@ -71,7 +71,7 @@
     },
     {
         "entity_label": "Promotions",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/market_data/promotions.xml",
+        "file_path": "market_data/promotions.xml",
         "fields": [
             { "name": "promotion_id", "type": "string", "required": true },
             { "name": "product_id", "type": "string", "required": false },
