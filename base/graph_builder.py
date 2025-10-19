@@ -307,7 +307,7 @@ class GraphBuilder:
             raise
 
 if __name__ == "__main__":
-    schema_file_path = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/schema_file.json"
+    schema_file_path = "sample_data/schema_file.json"
     graph_builder = GraphBuilder(schema_file_path)
     graph_builder.load_data_from_schema()
     graph_builder.build_graph()

@@ -1,7 +1,7 @@
 [
     {
         "entity_label": "Students",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/students.csv",
+        "file_path": "sample_data/students.csv",
         "fields": [
             {"name": "StudentID", "type": "integer", "required": true},
             {"name": "FirstName", "type": "string"},
@@ -18,7 +18,7 @@
     },
     {
         "entity_label": "Courses",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/courses.csv",
+        "file_path": "sample_data/courses.csv",
         "fields": [
             {"name": "CourseID", "type": "integer", "required": true},
             {"name": "CourseCode", "type": "string"},
@@ -29,7 +29,7 @@
     },
     {
         "entity_label": "Enrollments",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/enrollments.csv",
+        "file_path": "sample_data/enrollments.csv",
         "fields": [
             {"name": "EnrollmentID", "type": "integer", "required": true},
             {"name": "StudentID", "type": "integer", "required": true},
@@ -45,7 +45,7 @@
     },
     {
         "entity_label": "Hackathons",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/hackathons.json",
+        "file_path": "sample_data/hackathons.json",
         "fields": [
             {"name": "activityId", "type": "string", "required": true},
             {"name": "studentRef", "type": "integer", "required": true},
@@ -61,7 +61,7 @@
     },
     {
         "entity_label": "Sports",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/sports.json",
+        "file_path": "base/sample_data/sports.json",
         "fields": [
             {"name": "_id", "type": "string", "required": true},
             {"name": "studentIdentifier", "type": "integer", "required": true},
@@ -75,7 +75,7 @@
     },
     {
         "entity_label": "Clubs",
-        "file_path": "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/student_clubs.xml",
+        "file_path": "sample_data/student_clubs.xml",
         "fields": [
             {"name": "id", "type": "string", "required": true},
             {"name": "studentId", "type": "integer", "required": true},

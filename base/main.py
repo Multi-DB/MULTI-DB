@@ -105,8 +105,8 @@ def execute_cross_document_queries(queries_file_path):
         # raise
 
 if __name__ == "__main__":
-    schema_file_path = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/schema_file.json"
-    queries_file_path = "/Users/dhruvasharma/Documents/SEM2/DM/MULTI-DB/base/sample_data/queries.json"
+    schema_file_path = "sample_data/schema_file.json"
+    queries_file_path = "sample_data/queries.json"
     try:
         # The graph building and data loading should ideally happen before querying.
         # Consider using run_queries.py as the main entry point or ensure
